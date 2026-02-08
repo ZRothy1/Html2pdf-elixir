@@ -12,6 +12,11 @@ config :html2pdf,
   generators: [timestamp_type: :utc_datetime_usec],
   max_depth: 10
 
+config :html2pdf, Oban,
+  engine: Oban.Engines.Basic,
+  queues: [default: 10, crawlers: 2],
+  repo: Html2pdf.Repo
+
 # Configure the endpoint
 config :html2pdf, Html2pdfWeb.Endpoint,
   url: [host: "localhost"],

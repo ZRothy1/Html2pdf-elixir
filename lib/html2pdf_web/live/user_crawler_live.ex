@@ -75,8 +75,8 @@ defmodule Html2pdfWeb.UserCrawlerLive do
 
   def render(assigns) do
     ~H"""
-    <div>
-      <div>
+    <div class="p-8">
+      <div class="max-w-3/4">
         <p>
           Welcome to PDF-ify where we take a website and make it into a PDF so you can read it on the go!
         </p>
@@ -86,7 +86,7 @@ defmodule Html2pdfWeb.UserCrawlerLive do
           up to the depth you specified. All pages will be added to the PDF
         </p>
       </div>
-      <.form for={@ui.form} phx-change="validate" phx-submit="start-crawl">
+      <.form for={@ui.form} phx-change="validate" phx-submit="start-crawl" class="max-w-1/4">
         <.input
           field={@ui.form[:uri]}
           prompt="Enter a URL to convert to a PDF"
@@ -114,7 +114,7 @@ defmodule Html2pdfWeb.UserCrawlerLive do
         <%!-- TODO Write how many URIs we have so far --%>
       </div>
 
-      <div :if={@ui.crawl_status == :completed}>
+      <div :if={@ui.crawl_status == :completed} class="max-w-3/4">
         <p>Select the URLs you want to include in the PDF</p>
 
         <div>

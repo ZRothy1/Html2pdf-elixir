@@ -17,7 +17,8 @@ defmodule Html2pdfWeb.Router do
   scope "/", Html2pdfWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", UserCrawlerLive, :home
+    oban_dashboard("/oban")
   end
 
   # Other scopes may use custom stacks.

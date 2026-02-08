@@ -9,7 +9,8 @@ import Config
 
 config :html2pdf,
   ecto_repos: [Html2pdf.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime_usec],
+  max_depth: 10
 
 # Configure the endpoint
 config :html2pdf, Html2pdfWeb.Endpoint,

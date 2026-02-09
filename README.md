@@ -10,15 +10,15 @@ The current plan is to use Oban to ensure a limited number of crawls are kicked 
 to act as the brain of the operation. For a URL and specific depth we will find any achor tags and their HREF to try crawl further as long as the next
 link is not further in depth than the max depth.
 
-Each URL is handled by an async Task, which uses Req and Floki to get the HREFs it needs.
+Each URL is handled by an async Task, which uses [Req](https://hex.pm/packages/req) and [Floki](https://hex.pm/packages/floki) to get the HREFs it needs.
 
-The user can then select what PDFs they want and generate the PDF. PDF generation is handled with ChromicPDF as while WeasyPrint or other alternatives are out there,
+The user can then select what PDFs they want and generate the PDF. PDF generation is handled with [ChromicPDF](https://hex.pm/packages/chromic_pdf) as while WeasyPrint or other alternatives are out there,
 they need docker containers or are paid. ChromicPDF let me rely on Webkit and Chromium.
 
-PDFs are then combined using `pdftk`.
+PDFs are then combined using [`pdftk`](https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/).
 
 ### Architecture Notes
-Oban is currently used as a shortcut rather than setting up my own queue system using a GenServer. For this project I may experiment
+[Oban](https://hex.pm/packages/oban) is currently used as a shortcut rather than setting up my own queue system using a GenServer. For this project I may experiment
 with changing it over to a GenServer.
 
 I also opted to write my own crawler knowing that the library [Crawly](https://hex.pm/packages/crawly) exists to experiment with a more raw OTP solution. 

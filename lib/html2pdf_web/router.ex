@@ -1,5 +1,6 @@
 defmodule Html2pdfWeb.Router do
   use Html2pdfWeb, :router
+  import Oban.Web.Router
 
   pipeline :browser do
     plug :accepts, ["html"]

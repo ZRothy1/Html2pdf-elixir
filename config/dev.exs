@@ -29,6 +29,8 @@ config :html2pdf, Html2pdfWeb.Endpoint,
     tailwind: {Tailwind, :install_and_run, [:html2pdf, ~w(--watch)]}
   ]
 
+config :html2pdf, ChromicPDF, on_demand: true
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed

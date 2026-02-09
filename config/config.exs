@@ -28,6 +28,7 @@ config :html2pdf, Html2pdfWeb.Endpoint,
   pubsub_server: Html2pdf.PubSub,
   live_view: [signing_salt: "31L0wjKl"]
 
+config :html2pdf, ChromicPDF, on_demand: false
 # Configure the mailer
 #
 # By default it uses the "Local" adapter which stores the emails

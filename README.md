@@ -21,10 +21,14 @@ PDFs are then combined using [`pdftk`](https://www.pdflabs.com/tools/pdftk-the-p
 [Oban](https://hex.pm/packages/oban) is currently used as a shortcut rather than setting up my own queue system using a GenServer. For this project I may experiment
 with changing it over to a GenServer.
 
-I also opted to write my own crawler knowing that the library [Crawly](https://hex.pm/packages/crawly) exists to experiment with a more raw OTP solution. 
+I also opted to write my own crawler knowing that the library [Crawly](https://hex.pm/packages/crawly) exists to experiment with a more raw OTP solution. This project also does not do two things that Crawly does well:
+- Limiting concurrent requests per domain in order to be respectful and not hammer their server
+- Similarly, requests are not spaced like they are in Crawly
+- This does not respect `robots.txt` for each website, which the library already implements.
 
 If I were to create this project in a production environment I'd opt to use Crawly and Oban to manage these aspects as they have been battle tested,
 and proven.
+
 
 ### Installation Requirements
 Ensure that Chrome and PDFTK are installed on your machine

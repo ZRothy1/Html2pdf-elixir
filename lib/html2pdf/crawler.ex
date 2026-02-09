@@ -91,7 +91,6 @@ defmodule Html2pdf.Crawler do
     parent_pid = self()
 
     Task.async(fn ->
-      # TODO crawl a url, and send back the info to `parent_pid`
       case Req.get(url) do
         {:ok, %{status: 200, body: body}} when is_binary(body) ->
           parse_body(body, parent_pid, depth, url)
@@ -126,22 +125,55 @@ defmodule Html2pdf.Crawler do
         Floki.find(document, "a")
         |> Floki.attribute("href")
         |> Enum.each(fn next_url ->
-          next_url =
-            if String.starts_with?(next_url, "/") do
-              # Handle partial URLs by constructing a full path. Include the port *just in case*
-              # the URL is not on a typical port of 443 or 80
-              #
-              # Returns a url such as https://example.com:443/some/path
-              relative_to_absolute_url(url, next_url)
-            else
-              next_url
-            end
+          # Anchor tags can have many items, javascript, relative paths or links within
+          # the same page. So we should get the crawlable result, if any from them.
+          next_url = crawlable_url(url, next_url)
 
-          send(parent_pid, {:crawl, {next_url, depth + 1}})
+          if next_url, do: send(parent_pid, {:crawl, {next_url, depth + 1}})
         end)
 
       {:error, reason} ->
         Logger.error("Failed to parse HTML from #{url}: #{reason}")
+    end
+  end
+
+  # Gets a crawlable URL from an anchor tag
+  #
+  # Parameters:
+  # * `parent_url` - The page the anchor tag is on
+  # * `next_url` - The anchor tag's href
+  #
+  # If the anchor tag is a fragment within the same page, javascript, or not
+  # an HTTP(S) page we don't want to crawl it. Relative paths are also transformed
+  # into an absolute path, but only using the path. This prevents the crawler's visited
+  # list from having the same page twice because a tag linked to two different areas on
+  # the page.
+  #
+  # Returns a URL as as tring or `nil` if no crawlable URL was found.
+  defp crawlable_url(parent_url, next_url) do
+    case URI.new(next_url) do
+      # Relative fragments to the current page should be ignored too
+      {:ok, %{path: nil, fragment: "" <> _}} ->
+        nil
+
+      # Relative paths should be crawled, but we want to drop any fragments. This avoids
+      # crawling the same page twice because it was linked to two different fragments
+      {:ok, %{scheme: nil, host: nil, path: "" <> path}} ->
+        relative_to_absolute_url(parent_url, path)
+
+      # If an anchor tag is ever just `www.example.com` or `example.com` these are valid,
+      # but we need a scheme for Req. So a default of HTTP is added, and Req should follow
+      # it to https
+      {:ok, %{scheme: nil, host: "" <> _host}} ->
+        "http://" <> next_url
+
+      {:ok, %{scheme: scheme}} when scheme in ~w(http https) ->
+        next_url
+
+      # Skip all non HTTP or HTTPS schemes such as javascript for inline javascript on
+      # anchor tags. As well any failed URI parsing should be skipped.
+      _ ->
+        nil
     end
   end
 

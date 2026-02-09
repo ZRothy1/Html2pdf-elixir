@@ -13,6 +13,7 @@ defmodule Html2pdf.Application do
       {DNSCluster, query: Application.get_env(:html2pdf, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Html2pdf.PubSub},
       {Oban, Application.fetch_env!(:html2pdf, Oban)},
+      {DynamicSupervisor, name: Html2pdf.CrawlerSupervisor, strategy: :one_for_one},
       # Start a worker by calling: Html2pdf.Worker.start_link(arg)
       # {Html2pdf.Worker, arg},
       # Start to serve requests, typically the last entry

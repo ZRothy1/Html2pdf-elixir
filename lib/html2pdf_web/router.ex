@@ -19,6 +19,8 @@ defmodule Html2pdfWeb.Router do
     pipe_through :browser
 
     live "/", UserCrawlerLive, :home
+    get "/download/:job_id", Controllers.CombinedPdfDownloadController, :download
+
     oban_dashboard("/oban")
   end
 

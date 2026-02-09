@@ -2,6 +2,7 @@ defmodule Html2pdfWeb.UserCrawlerLive do
   use Html2pdfWeb, :live_view
 
   alias Html2pdf.CrawlJob
+  alias Html2pdf.PdfGenerator
 
   # Maximum URLs to display per page with infinite pagination
   @urls_per_page 50
@@ -115,8 +116,8 @@ defmodule Html2pdfWeb.UserCrawlerLive do
       </div>
 
       <div :if={@ui.crawl_status == :completed} class="max-w-3/4">
-        <p>Select the URLs you want to include in the PDF</p>
-
+        <p>Select the URLs you want to include in the PDF and click the button to generate it</p>
+        <p>Once generated you can click the button again to download it</p>
         <div>
           <table>
             <thead>
@@ -133,10 +134,20 @@ defmodule Html2pdfWeb.UserCrawlerLive do
                 <th>URL</th>
                 <th>
                   <.button
+                    :if={@data.pdf_job_id == nil}
                     phx-click="generate-pdf"
                     disabled={Enum.empty?(@data.selected_urls)}
                   >
                     Generate PDF
+                  </.button>
+
+                  <.button
+                    :if={@data.pdf_job_id != nil}
+                    href={~p"/download/#{@data.pdf_job_id}"}
+                    target="_blank"
+                    phx-click="download-pdf"
+                  >
+                    Download PDF
                   </.button>
                 </th>
               </tr>
@@ -193,7 +204,7 @@ defmodule Html2pdfWeb.UserCrawlerLive do
         Phoenix.PubSub.subscribe(Html2pdf.PubSub, job_id)
 
         ui = %{socket.assigns.ui | crawl_status: :in_progress}
-        data = %{socket.assigns.data | crawl_job_id: job_id}
+        data = %{socket.assigns.data | crawl_job_id: job_id, pdf_job_id: nil}
 
         {:noreply, assign(socket, %{ui: ui, data: data})}
 
@@ -308,10 +319,11 @@ defmodule Html2pdfWeb.UserCrawlerLive do
 
   # Kick off the PDF Generation
   def handle_event("generate-pdfs", _params, socket) do
-    _selected_urls = socket.assigns.data.selected_urls
+    selected_urls = socket.assigns.data.selected_urls |> MapSet.to_list()
+    {:ok, job_id} = PdfGenerator.generate_pdfs(selected_urls)
+    data = %{socket.assigns.data | pdf_job_id: job_id}
 
-    # TODO Kick off call to the PDF generation service
-    {:noreply, socket}
+    {:noreply, assign(socket, :data, data)}
   end
 
   # Receive Crawl Complete messages
@@ -330,6 +342,14 @@ defmodule Html2pdfWeb.UserCrawlerLive do
       |> stream(:urls, paginated_uris, limit: @urls_per_page, reset: true)
 
     {:noreply, socket}
+  end
+
+  # Receive Successfull download messages and clear the PDF Job ID because
+  # on success the downloads are removed.
+  def handle_info(:download_complete, socket) do
+    data = %{socket.assigns.data | pdf_job_id: nil}
+
+    {:noreply, assign(socket, :data, data)}
   end
 
   # Helper Functions

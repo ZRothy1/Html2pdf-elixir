@@ -15,7 +15,7 @@ Each URL is handled by an async Task, which uses [Req](https://hex.pm/packages/r
 The user can then select what PDFs they want and generate the PDF. PDF generation is handled with [ChromicPDF](https://hex.pm/packages/chromic_pdf) as while WeasyPrint or other alternatives are out there,
 they need docker containers or are paid. ChromicPDF let me rely on Webkit and Chromium.
 
-PDFs are then combined using [`pdftk`](https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/).
+PDFs are then combined using [`pdftk`](https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/) or the modern replacement [pdftk-java](https://gitlab.com/pdftk-java/pdftk)
 
 ### Architecture Notes
 [Oban](https://hex.pm/packages/oban) is currently used as a shortcut rather than setting up my own queue system using a GenServer. For this project I may experiment
@@ -26,7 +26,7 @@ I also opted to write my own crawler knowing that the library [Crawly](https://h
 If I were to create this project in a production environment I'd opt to use Crawly and Oban to manage these aspects as they have been battle tested,
 and proven.
 
-### Requirements
+### Installation Requirements
 Ensure that Chrome and PDFTK are installed on your machine
 
 ### Running Locally

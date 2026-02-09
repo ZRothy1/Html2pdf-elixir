@@ -19,6 +19,8 @@ defmodule Html2pdfWeb.Controllers.CombinedPdfDownloadController do
         send_download(conn, {:binary, binary}, disposition: :attachment, filename: "combined.pdf")
 
       {:error, _} ->
+        PdfGenerator.cleanup_tmp_dir(tmp_dir)
+
         send_resp(conn, "500", "An error occurred downloading your file, please try again")
     end
   end

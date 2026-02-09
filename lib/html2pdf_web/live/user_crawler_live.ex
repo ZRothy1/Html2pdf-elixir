@@ -56,7 +56,8 @@ defmodule Html2pdfWeb.UserCrawlerLive do
         # Enum of :not_started, :queued, :in_progress, :complete
         crawl_status: :not_started,
         form: UserForm.changeset(%{}) |> to_form(),
-        all_selected: false
+        all_selected: false,
+        is_generating_pdf?: false
       },
       data: %{
         selected_urls: MapSet.new(),
@@ -136,9 +137,13 @@ defmodule Html2pdfWeb.UserCrawlerLive do
                   <.button
                     :if={@data.pdf_job_id == nil}
                     phx-click="generate-pdf"
-                    disabled={Enum.empty?(@data.selected_urls)}
+                    disabled={Enum.empty?(@data.selected_urls) || @ui.is_generating_pdf?}
                   >
-                    Generate PDF
+                    <%= if @ui.is_generating_pdf? do %>
+                      Generating PDF...
+                    <% else %>
+                      Generate PDF
+                    <% end %>
                   </.button>
 
                   <.button
@@ -204,7 +209,13 @@ defmodule Html2pdfWeb.UserCrawlerLive do
         Phoenix.PubSub.subscribe(Html2pdf.PubSub, job_id)
 
         ui = %{socket.assigns.ui | crawl_status: :in_progress}
-        data = %{socket.assigns.data | crawl_job_id: job_id, pdf_job_id: nil}
+
+        data = %{
+          socket.assigns.data
+          | crawl_job_id: job_id,
+            pdf_job_id: nil,
+            selected_urls: MapSet.new()
+        }
 
         {:noreply, assign(socket, %{ui: ui, data: data})}
 
@@ -318,12 +329,37 @@ defmodule Html2pdfWeb.UserCrawlerLive do
   end
 
   # Kick off the PDF Generation
-  def handle_event("generate-pdfs", _params, socket) do
+  def handle_event("generate-pdf", _params, socket) do
     selected_urls = socket.assigns.data.selected_urls |> MapSet.to_list()
-    {:ok, job_id} = PdfGenerator.generate_pdfs(selected_urls)
-    data = %{socket.assigns.data | pdf_job_id: job_id}
 
-    {:noreply, assign(socket, :data, data)}
+    ui = %{socket.assigns.ui | is_generating_pdf?: true}
+
+    socket =
+      socket
+      |> assign(:ui, ui)
+      |> start_async(:generate_pdf, fn ->
+        PdfGenerator.generate_pdfs(selected_urls)
+      end)
+
+    {:noreply, assign(socket, ui: ui)}
+  end
+
+  def handle_async(:generate_pdf, {:ok, task_result}, socket) do
+    case task_result do
+      {:ok, job_id} ->
+        data = %{socket.assigns.data | pdf_job_id: job_id}
+        ui = %{socket.assigns.ui | is_generating_pdf?: false}
+
+        assign(socket, %{data: data, ui: ui})
+
+      {:error, _msg} ->
+        ui = %{socket.assigns.ui | is_generating_pdf?: false}
+
+        socket
+        |> assign(:ui, ui)
+        |> put_flash(:error, "An error occurred generating your PDF, please try again")
+    end
+    |> then(&{:noreply, &1})
   end
 
   # Receive Crawl Complete messages

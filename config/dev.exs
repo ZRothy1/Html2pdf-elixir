@@ -10,6 +10,8 @@ config :html2pdf, Html2pdf.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
+config :html2pdf, env: :dev
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #

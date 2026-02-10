@@ -11,7 +11,9 @@ config :html2pdf, Html2pdf.Repo,
   hostname: "localhost",
   database: "html2pdf_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: System.schedulers_online() * 2
+  pool_size: System.schedulers_online() * 2,
+
+config :html2pdf, env: :test
 
 # Disable oban
 config :html2pdf, Oban, testing: :manual

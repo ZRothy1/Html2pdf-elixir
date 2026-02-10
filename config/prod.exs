@@ -17,6 +17,8 @@ config :html2pdf, Html2pdfWeb.Endpoint,
     hosts: ["localhost", "127.0.0.1"]
   ]
 
+config :html2pdf, env: :prod
+
 # Configure Swoosh API Client
 config :swoosh, api_client: Swoosh.ApiClient.Req
 

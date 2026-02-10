@@ -6,38 +6,36 @@ defmodule Html2pdf.CrawlJob do
   need a database except for the Oban Queues.
   """
   use Oban.Worker,
-    max_attempts: 1,
+    max_attempts: 3,
     queue: :crawlers,
     tags: ["crawl_requests"]
 
   alias Html2pdf.Crawler
 
   @impl Oban.Worker
-  def perform(%{args: %{"uri" => uri, "depth" => depth, "job_id" => job_id}} = _job) do
+  def perform(%{args: %{"uri" => uri, "depth" => depth, "job_id" => job_id}} = job) do
     child_spec = %{
       id: Crawler,
-      start: {Crawler, :start_link, [{uri, depth, self()}]},
-      restart: :transient
+      start: {Crawler, :start_link, [{uri, depth, job_id}]},
+      # Avoid restarting and instead rely on Oban's retry system
+      restart: :temporary
     }
 
     {:ok, pid} =
       DynamicSupervisor.start_child(Html2pdf.CrawlerSupervisor, child_spec)
 
-    _ref = Process.monitor(pid)
+    ref = Process.monitor(pid)
 
     receive do
-      # This isn't the most robust solution as we are passing around a potentially large
-      # list of URLs in memory. A better solution for the longer term would be to save this temporarily
-      # to the database, or even an ETS Table.
-      {:crawl_success, urls} ->
-        Phoenix.PubSub.broadcast(Html2pdf.PubSub, job_id, {:crawl_complete, urls})
-
+      {:DOWN, ^ref, :process, _pid, :normal} ->
         :ok
 
-      _msg ->
-        Phoenix.PubSub.broadcast(Html2pdf.PubSub, job_id, {:crawl_complete, []})
+      {:DOWN, ^ref, :process, _pid, reason} ->
+        if job.max_attempts == job.attempt do
+          Phoenix.PubSub.broadcast(Html2pdf.PubSub, job_id, :crawl_error)
+        end
 
-        {:cancel, "GenServer has crashed"}
+        {:error, "GenServer has crashed: #{inspect(reason)}"}
     end
   end
 end

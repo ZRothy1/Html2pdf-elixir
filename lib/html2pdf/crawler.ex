@@ -17,13 +17,13 @@ defmodule Html2pdf.Crawler do
     GenServer.start_link(__MODULE__, initial_args)
   end
 
-  def init({url, max_depth, parent_pid}) do
+  def init({url, max_depth, job_id}) do
     state = %{
       visited: MapSet.new(),
       active_workers: 0,
       url: url,
       max_depth: max_depth,
-      parent_pid: parent_pid
+      job_id: job_id
     }
 
     # Kick off the crawl from the root directory
@@ -63,7 +63,7 @@ defmodule Html2pdf.Crawler do
 
     # If we have no more workers, let's end the task so we send a message to the Oban task
     if worker_count == 0 do
-      send(state.parent_pid, {:crawl_success, state.visited})
+      Phoenix.PubSub.broadcast(Html2pdf.PubSub, state.job_id, {:crawl_complete, state.visited})
 
       {:stop, :normal, state}
     else

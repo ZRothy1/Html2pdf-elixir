@@ -380,6 +380,28 @@ defmodule Html2pdfWeb.UserCrawlerLive do
     {:noreply, socket}
   end
 
+  # Handle any crash message back from the Oban Job
+  #
+  # In this case we want to unblock the user from trying again, resetting any data
+  # like crawled URLs and reset the crawl status to the :not_started state.
+  def handle_info(:crawl_error, socket) do
+    data = %{socket.assigns.data | crawled_urls: MapSet.new()}
+    ui = %{socket.assigns.ui | crawl_status: :not_started}
+
+    # Unsubscribe once the job completes
+    Phoenix.PubSub.unsubscribe(Html2pdf.PubSub, data.crawl_job_id)
+
+    socket =
+      socket
+      |> assign(%{ui: ui, data: data})
+      |> put_flash(
+        :error,
+        "Sorry, something went wrong while crawling the website. Please try again!"
+      )
+
+    {:noreply, socket}
+  end
+
   # Receive Successfull download messages and clear the PDF Job ID because
   # on success the downloads are removed.
   def handle_info(:download_complete, socket) do

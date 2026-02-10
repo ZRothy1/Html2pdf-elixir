@@ -9,7 +9,13 @@ import Config
 
 config :html2pdf,
   ecto_repos: [Html2pdf.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime_usec],
+  max_depth: 10
+
+config :html2pdf, Oban,
+  engine: Oban.Engines.Basic,
+  queues: [default: 10, crawlers: 2],
+  repo: Html2pdf.Repo
 
 # Configure the endpoint
 config :html2pdf, Html2pdfWeb.Endpoint,
@@ -22,6 +28,7 @@ config :html2pdf, Html2pdfWeb.Endpoint,
   pubsub_server: Html2pdf.PubSub,
   live_view: [signing_salt: "31L0wjKl"]
 
+config :html2pdf, ChromicPDF, on_demand: false
 # Configure the mailer
 #
 # By default it uses the "Local" adapter which stores the emails

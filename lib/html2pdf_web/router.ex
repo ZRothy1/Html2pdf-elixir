@@ -1,5 +1,7 @@
 defmodule Html2pdfWeb.Router do
   use Html2pdfWeb, :router
+  @env Application.compile_env(:html2pdf, :env)
+  import Oban.Web.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -17,7 +19,10 @@ defmodule Html2pdfWeb.Router do
   scope "/", Html2pdfWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", UserCrawlerLive, :home
+    get "/download/:job_id", Controllers.CombinedPdfDownloadController, :download
+
+    if @env == :dev, do: oban_dashboard("/oban")
   end
 
   # Other scopes may use custom stacks.

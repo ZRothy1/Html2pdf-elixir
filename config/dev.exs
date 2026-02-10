@@ -10,6 +10,8 @@ config :html2pdf, Html2pdf.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
+config :html2pdf, env: :dev
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
@@ -28,6 +30,8 @@ config :html2pdf, Html2pdfWeb.Endpoint,
     esbuild: {Esbuild, :install_and_run, [:html2pdf, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:html2pdf, ~w(--watch)]}
   ]
+
+config :html2pdf, ChromicPDF, on_demand: true
 
 # ## SSL Support
 #

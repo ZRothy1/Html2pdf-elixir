@@ -29,6 +29,20 @@ I also opted to write my own crawler knowing that the library [Crawly](https://h
 If I were to create this project in a production environment I'd opt to use Crawly and Oban to manage these aspects as they have been battle tested,
 and proven.
 
+#### Phase 1 - In Progress
+- Create an introductury webcrawler using OTP (GenServers) and Oban as the queuing system
+- Use ChromicPDF to generate PDFs for the URLs and PDFTK to combine them into one PDF
+
+#### Phase 2 - Not Started
+Phase 2 attempts to replace some dependencies for a lighter weight system in case I want to deploy this to Heroku, or another server
+without the need for a Database. It also adds behavior to the webcrawler to enhance how it interacts with live websites and respect their
+settings.
+
+- Replace Oban with another GenServer to act as a queue system to remove the need to have Postgres as a DB
+- Enhance the crawler to
+  - Pace requests per job so to avoid flagging an IP address as a bot
+  - Limit the number of ongoing requests per job to avoid hammering a server.
+  - Respect Robots.txt 
 
 ### Installation Requirements
 Ensure that Chrome and PDFTK are installed on your machine

@@ -14,7 +14,16 @@ defmodule Html2pdf.PdfGenerator do
 
   require Logger
 
-  def generate_pdfs(urls) do
+  @doc """
+  Generate a combined PDF for the URLs
+
+  Parameters:
+  * `urls` - A list of strings, containin the URLs the user wants a PDF of
+
+  Returns {:ok, tmp_sub_directory :: string()} or {:error, msg :: string()}
+  """
+  def generate_pdf(urls) do
+    # Create a new TypeID to act as a sub-directory with in the temp directory
     job_id = TypeID.new("pdf") |> TypeID.to_string()
     tmp_dir = System.tmp_dir() <> "/#{job_id}"
 
@@ -42,6 +51,14 @@ defmodule Html2pdf.PdfGenerator do
     end
   end
 
+  # Generate a PDF for a specific URL
+  #
+  # Parameters
+  # * `url` - string - the URL to create a PDF of
+  # * `tmp_dir` - string - The full temp directory including any sub-directory
+  #   of where to store the PDFs
+  #
+  # Returns file_name :: string() on success where or `nil` on any failure
   defp generate_pdf(url, tmp_dir) do
     file_name = (TypeID.new("pdf") |> TypeID.to_string()) <> ".pdf"
 

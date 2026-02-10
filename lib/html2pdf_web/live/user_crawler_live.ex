@@ -1,4 +1,8 @@
 defmodule Html2pdfWeb.UserCrawlerLive do
+  @moduledoc """
+  LiveView that allows the user to start a Crawl, select what
+  URLs they want in their combined PDF, and then download a generated PDF.
+  """
   use Html2pdfWeb, :live_view
 
   alias Html2pdf.CrawlJob
@@ -9,6 +13,10 @@ defmodule Html2pdfWeb.UserCrawlerLive do
   @max_depth Application.compile_env(:html2pdf, :max_depth)
 
   defmodule UserForm do
+    @moduledoc """
+    Embedded schema that backs the user's interactable form for validation
+    and fields.
+    """
     use Ecto.Schema
     import Ecto.Changeset
 
@@ -32,6 +40,7 @@ defmodule Html2pdfWeb.UserCrawlerLive do
       |> validate_number(:depth, greater_than: 0, less_than_or_equal_to: @max_depth)
     end
 
+    # Validate a URI and ensures it is a live website by DNS
     defp validate_uri(cs) do
       uri = get_change(cs, :uri)
 
@@ -311,6 +320,7 @@ defmodule Html2pdfWeb.UserCrawlerLive do
     {:noreply, socket}
   end
 
+  # Scroll to the previous page of URLs
   def handle_event("prev_page", _params, socket) do
     ui = socket.assigns.ui
     next_page = ui.page - 1
@@ -338,12 +348,13 @@ defmodule Html2pdfWeb.UserCrawlerLive do
       socket
       |> assign(:ui, ui)
       |> start_async(:generate_pdf, fn ->
-        PdfGenerator.generate_pdfs(selected_urls)
+        PdfGenerator.generate_pdf(selected_urls)
       end)
 
     {:noreply, assign(socket, ui: ui)}
   end
 
+  # Listen for the async job's completion for generating the PDF
   def handle_async(:generate_pdf, {:ok, task_result}, socket) do
     case task_result do
       {:ok, job_id} ->
@@ -423,5 +434,7 @@ defmodule Html2pdfWeb.UserCrawlerLive do
     end)
   end
 
+  # Helper function for returning `@max_depth` in the HEEx template
+  # to avoid hard coding.
   defp get_max_depth(), do: @max_depth
 end

@@ -19,10 +19,17 @@ defmodule Html2pdf.Crawler do
 
   def init({url, max_depth, job_id}) do
     state = %{
+      # Keep track of the visited websites. The Websites must be absolute URLs, with no
+      # fragments stored
       visited: MapSet.new(),
+      # How many active workers do we have
       active_workers: 0,
+      # The root URL the crawl started from
       url: url,
+      # How many links down should we go before calling it quites
       max_depth: max_depth,
+      # A TypeID string for the request. This doubles as the PubSub topic LiveView listens
+      # to for updates.
       job_id: job_id
     }
 
@@ -55,7 +62,7 @@ defmodule Html2pdf.Crawler do
     {:noreply, state}
   end
 
-  # Handle incoming messages from our Task async workers.
+  # Handle completed messages from our Task async workers.
   def handle_info(:completed, state) do
     worker_count = state.active_workers - 1
 

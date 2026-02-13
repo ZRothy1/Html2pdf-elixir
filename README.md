@@ -2,8 +2,7 @@
 
 ## Goal
 
-The goal of this project is to re-write a library I made in Ruby / Ruby on Rails that crawled a website, converting it to a PDF. It is a WIP
-with the initial implementation being done on a branch `feature/initial_featureset`. 
+The goal of this project is to re-write a library I made in Ruby / Ruby on Rails that crawled a website, converting it to a PDF. Below I've described both my roadmap and phases for building out this project. I also go into depth about the choices I made and my reasoning behind them to give insight into my thought pattern. This alongside the code and its documentation should give a clear picture of the purpose for each piece.
 
 ## Architecture
 The current plan is to use Oban to ensure a limited number of crawls are kicked off at once. Each job ran in the Oban Queue will spawn off a GenServer
@@ -29,7 +28,7 @@ I also opted to write my own crawler knowing that the library [Crawly](https://h
 If I were to create this project in a production environment I'd opt to use Crawly and Oban to manage these aspects as they have been battle tested,
 and proven.
 
-#### Phase 1 - In Progress
+#### Phase 1 - Done
 - Create an introductury webcrawler using OTP (GenServers) and Oban as the queuing system
 - Use ChromicPDF to generate PDFs for the URLs and PDFTK to combine them into one PDF
 
@@ -38,7 +37,7 @@ Phase 2 attempts to replace some dependencies for a lighter weight system in cas
 without the need for a Database. It also adds behavior to the webcrawler to enhance how it interacts with live websites and respect their
 settings.
 
-- Replace Oban with another GenServer to act as a queue system to remove the need to have Postgres as a DB
+- Possibly Oban with another GenServer to act as a queue system to remove the need to have Postgres as a DB
 - Enhance the crawler to
   - Pace requests per job so to avoid flagging an IP address as a bot
   - Limit the number of ongoing requests per job to avoid hammering a server.

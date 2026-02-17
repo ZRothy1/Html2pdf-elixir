@@ -2,7 +2,7 @@
 
 ## Goal
 
-The goal of this project is to re-write a library I made in Ruby / Ruby on Rails that crawled a website, converting it to a PDF. Below I've described both my roadmap and phases for building out this project. I also go into depth about the choices I made and my reasoning behind them to give insight into my thought pattern. This alongside the code and its documentation should give a clear picture of the purpose for each piece.
+The goal of this project is to re-write a library I made in [Ruby / Ruby on Rails](https://github.com/ZRothy1/Html2Pdf) that crawled a website, converting it to a PDF. Below I've described both my roadmap and phases for building out this project. I also go into depth about the choices I made and my reasoning behind them to give insight into my thought pattern. This alongside the code and its documentation should give a clear picture of the purpose for each piece.
 
 ## Architecture
 The current plan is to use Oban to ensure a limited number of crawls are kicked off at once. Each job ran in the Oban Queue will spawn off a GenServer
